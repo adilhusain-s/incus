@@ -392,6 +392,14 @@ func (d *qemu) memoryTopology(bs *qemuBootState) (*qemuMemoryTopology, error) {
 		maxMemoryBytes = memSizeBytes
 	}
 
+	// Align memory to hardware requirements.
+	if d.architecture == osarch.ARCH_64BIT_POWERPC_LITTLE_ENDIAN || d.architecture == osarch.ARCH_64BIT_POWERPC_BIG_ENDIAN {
+		// pseries machine type requires maxmem to be aligned to 256 MiB.
+		const memAlign = 256 * 1024 * 1024
+		memSizeBytes = roundUpToBlockSize(memSizeBytes, memAlign)
+		maxMemoryBytes = roundUpToBlockSize(maxMemoryBytes, memAlign)
+	}
+
 	// Create the struct.
 	memInfo := &qemuMemoryTopology{}
 	memInfo.Base = memSizeBytes
